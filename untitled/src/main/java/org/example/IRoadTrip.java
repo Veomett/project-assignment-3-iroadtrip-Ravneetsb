@@ -1,3 +1,5 @@
+package org.example;
+
 import java.util.List;
 
 public class IRoadTrip {
@@ -22,7 +24,7 @@ public class IRoadTrip {
 
     public void acceptUserInput() {
         // Replace with your code
-        System.out.println("IRoadTrip - skeleton");
+        System.out.println("org.example.IRoadTrip - skeleton");
     }
 
 
