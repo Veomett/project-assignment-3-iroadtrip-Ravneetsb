@@ -14,7 +14,11 @@ public class IRoadTrip {
         // Replace with your code
         readTXT();
         updateNeighbours();
+        findCountryByName("United States").setAlias("United States of America");
         readTSV();
+//        for (Country c: countries) {
+//            c.details();
+//        }
 //        readCSV();
     }
 
@@ -39,7 +43,7 @@ public class IRoadTrip {
     @SuppressWarnings("unchecked")
     private void readTXT() {
         // TO DO: special cases for countries with a "," in the name.
-        String countryRegex = "(?<Country>[A-Za-z\\s,]+)";
+        String countryRegex = "(?<Country>[A-Za-z\\s,']+)";
         Pattern pattern;
         Matcher match;
 
@@ -61,14 +65,14 @@ public class IRoadTrip {
                                 country.setAlias(alias);
                             firstCountry = false;
                         } else {
-                            String temp = match.group("Country");
-                            if (!temp.trim().equals("km")) {
+                            String temp = formatCountryName(match.group("Country").trim());
+                            if (!temp.equals("km")) {
                                 if (!neighbours.containsKey(country)) {
                                     ArrayList<String> neighbours = new ArrayList<>();
-                                    neighbours.add(temp.trim());
+                                    neighbours.add(temp);
                                     this.neighbours.put(country, (ArrayList<String>) neighbours.clone());
                                 } else {
-                                    this.neighbours.get(country).add(temp.trim());
+                                    this.neighbours.get(country).add(temp);
                                 }
 
                             }
@@ -90,7 +94,7 @@ public class IRoadTrip {
         Pattern pattern = Pattern.compile(".+\\((?<Alias>.+)\\).+=");
         Matcher match = pattern.matcher(data);
         if (match.find())
-            return match.group("Alias").toLowerCase();
+            return formatCountryName(match.group("Alias").toLowerCase());
         else
             return null;
     }
@@ -103,15 +107,17 @@ public class IRoadTrip {
                 line = line.toLowerCase();
                 String[] data = line.split("\t");
                 if (data[4].equals("2020-12-31")) {
-                    String country = data[2];
-                    String countryCode = data[1];
-//                    System.out.println(country + " " + countryCode);
-                    for (Country c: countries) {
-                        if (c.getName().equals(country)) {
-                            c.setCode(countryCode);
-                            c.setId(data[0]);
-                        }
+                    String country = formatCountryName(data[2]);
+                    String countryCode = data[1].toUpperCase();
+                    Country c = findCountryByName(country);
+//                    System.out.println("call on " + country);
+                    if (c != null) {
+                        c.setCode(countryCode);
+                        c.setId(data[0]);
+                    } else {
+                        System.out.println(country + " not found");
                     }
+
                 }
             }
         } catch (IOException e) {
@@ -124,12 +130,12 @@ public class IRoadTrip {
     private String formatCountryName(String name) {
         Pattern pattern = Pattern.compile("\\b(?!(of|the|and)\\b)\\w");
         Matcher match = pattern.matcher(name);
-        StringBuffer res = new StringBuffer();
+        StringBuffer sb = new StringBuffer();
         while (match.find()) {
-            match.appendReplacement(res, match.group().toUpperCase());
+            match.appendReplacement(sb, match.group().toUpperCase());
         }
-        match.appendTail(res);
-        return res.toString();
+        match.appendTail(sb);
+        return sb.toString();
     }
     private void updateNeighbours() {
         for (Country c: countries) {
@@ -147,6 +153,10 @@ public class IRoadTrip {
         for (Country c: countries) {
             if (c.getName().equals(name))
                 return c;
+            if (c.getAlias() != null) {
+                if (c.getAlias().equals(name))
+                    return c;
+            }
         }
         return null;
     }
@@ -170,8 +180,9 @@ public class IRoadTrip {
 
     public static void main(String[] args) {
         IRoadTrip a3 = new IRoadTrip(args);
-        System.out.println(a3.findCountryByName("Congo, Democratic Republic of the"));
+//        a3.findCountryByName("United States").details();
 //        a3.acceptUserInput();
+        System.out.println(a3.findCountryByName("Cote D’Ivoire"));
 
     }
 

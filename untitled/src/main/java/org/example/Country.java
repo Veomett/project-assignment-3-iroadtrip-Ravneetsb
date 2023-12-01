@@ -64,4 +64,16 @@ public class Country implements Comparable<Country> {
     public void setAlias(String alias) {
         this.alias = alias;
     }
+
+    public void details() {
+        String details = "---------------------------------\n" +
+                "Object Country: \n" +
+                "\t Name: " + this.name + "\n" +
+                "\t Alias: " + this.alias + "\n" +
+                "\t Code: " + this.code + "\n" +
+                "\t ID: " + this.id + "\n" +
+                "\t Neighbours" + this.neighbours +
+                "\n---------------------------------";
+        System.out.println(details);
+    }
 }
