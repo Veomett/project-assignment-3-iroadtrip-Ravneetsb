@@ -6,11 +6,13 @@ public class Country implements Comparable<Country> {
     private final String name;
     private String code;
     private String id;
-    private final HashMap<String, String> neighbours;
+    private String alias = null;
+    private final HashMap<Country, String> neighbours;
+//    private final HashMap<Country, String> Neighbours;
 
     public Country(String name) {
         this.name = name;
-        neighbours = new HashMap<>();
+        this.neighbours = new HashMap<>();
     }
     @Override
     public int compareTo(Country c) {
@@ -26,10 +28,10 @@ public class Country implements Comparable<Country> {
     public String getName() {
         return this.name;
     }
-    public void addNeighbour(String country, String distance) {
+    public void addNeighbour(Country country, String distance) {
         neighbours.put(country, distance);
     }
-    public HashMap<String, String> getNeighbours() {
+    public HashMap<Country, String> getNeighbours() {
         return neighbours;
     }
 
@@ -43,11 +45,23 @@ public class Country implements Comparable<Country> {
 
     @Override
     public String toString() {
-        return "Country{" +
-                "name='" + name + '\'' +
-                ", code='" + code + '\'' +
-                ", id='" + id + '\'' +
-                ", neighbours=" + neighbours +
-                '}';
+        String res;
+        if (this.alias != null) {
+            res = "{ Name: " + this.name +
+                    " | Alias: " + this.alias +
+                    " }";
+        } else {
+            res = "{ Name: " + this.name +
+            " }";
+        }
+        return res;
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
 }
