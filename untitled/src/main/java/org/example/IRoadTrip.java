@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 public class IRoadTrip {
     private final ArrayList<Country> countries = new ArrayList<>();
     private final HashMap<Country, ArrayList<String>> neighbours = new HashMap<>();
+    private final HashMap<String, String> neighbourAlias = new HashMap<>();
     public IRoadTrip (String [] args) {
         // Replace with your code
         readTXT();
@@ -42,13 +43,14 @@ public class IRoadTrip {
     }
 
     private void getNeighbourAlias(String line) {
-        Pattern pattern = Pattern.compile(".+=[.+;]+\\s(?<Country>[A-Za-z]+)(?<Alias>\\(.+\\))");
+        Pattern pattern = Pattern.compile(".+;\\s(?<Country>.+)\\s\\((?<Alias>.+)\\).*");
         Matcher match = pattern.matcher(line);
         while (match.find()) {
             String country = match.group("Country");
             String alias = match.group("Alias");
-            Country c = findCountryByName(country);
-            c.addAlias(alias);
+            if (country != null && alias != null) {
+                neighbourAlias.put(formatCountryName(country), formatCountryName(alias));
+            }
         }
     }
 
@@ -212,6 +214,17 @@ public class IRoadTrip {
 //        findCountryByName("Suriname").addAlias("Surinam");
         nameHasThe();
         nameHasAnd();
+        neighbourAliasFix();
+    }
+
+    private void neighbourAliasFix() {
+        neighbourAlias.remove("Morocco");
+        for (String country: neighbourAlias.keySet()) {
+            Country c = findCountryByName(country);
+            if (c != null)
+                c.addAlias(neighbourAlias.get(country));
+            else System.out.println(country + " is null");
+        }
     }
 
     private void nameHasThe() {
@@ -263,7 +276,8 @@ public class IRoadTrip {
 
     public static void main(String[] args) {
         IRoadTrip a3 = new IRoadTrip(args);
-        a3.findCountryByName("Denmark").details();
+        a3.findCountryByName("Korea, North").details();
+        a3.findCountryByName("Democratic Republic of the Congo").details();
 //        a3.acceptUserInput();
 
     }
