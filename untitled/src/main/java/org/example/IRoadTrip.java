@@ -11,6 +11,7 @@ public class IRoadTrip {
     private final ArrayList<Country> countries = new ArrayList<>();
     private final HashMap<Country, ArrayList<String>> neighbours = new HashMap<>();
     private final HashMap<String, String> neighbourAlias = new HashMap<>();
+    public int[][] Matrix;
     public IRoadTrip (String [] args) {
         // Replace with your code
         readTXT();
@@ -18,6 +19,7 @@ public class IRoadTrip {
         dataFix();
         readTSV();
         readCSV();
+        initMatrix();
     }
 
     private void readCSV() {
@@ -176,7 +178,6 @@ public class IRoadTrip {
 //        updateCountries();
     }
 
-
     private String formatCountryName(String name) {
         Pattern pattern = Pattern.compile("^t|\\b(?!(of|the|and)\\b)\\w");
         Matcher match = pattern.matcher(name);
@@ -187,6 +188,7 @@ public class IRoadTrip {
         match.appendTail(sb);
         return sb.toString();
     }
+
     private void updateNeighbours() {
         for (Country c: countries) {
             ArrayList<String> n = this.neighbours.get(c);
@@ -266,13 +268,17 @@ public class IRoadTrip {
             if (match.find()) {
                 String[] nameArr = name.split("\\sand\\s");
                 c.addAlias(nameArr[0].trim() + "-" + nameArr[1].trim());
-//                c.details();
             }
         }
     }
 
     public int getDistance (String country1, String country2) {
-        // Replace with your code
+        Country c1 = findCountryByName(country1);
+        Country c2 = findCountryByName(country2);
+        if (c1 != null && c2 != null) {
+            if (isNeighbour(c1, c2))
+                return c1.getNeighbours().get(c2);
+        }
         return -1;
     }
 
@@ -281,19 +287,71 @@ public class IRoadTrip {
         return null;
     }
 
+    private void initMatrix() {
+        int numCountries = countries.size();
+        Matrix = new int[countries.size()][countries.size()];
+        for (int i = 0 ; i < numCountries; i++) {
+            for (int j = 0 ; j < numCountries; j++) {
+                if (i == j) {
+                    Matrix[i][j] = 0;
+                } else Matrix[i][j] = Integer.MAX_VALUE;
+            }
+        }
+
+        for (int i = 0; i < numCountries; i++) {
+            Country country = countries.get(i);
+            HashMap<Country, Integer> neighbours = country.getNeighbours();
+            for (Country neighbour: neighbours.keySet()) {
+                int neighbourIndex = countries.indexOf(neighbour);
+                int distance = neighbours.get(neighbour);
+                Matrix[i][neighbourIndex] = distance;
+                Matrix[neighbourIndex][i] = distance;
+            }
+        }
+
+        for (int k = 0; k < numCountries; k++) {
+            for (int i = 0; i < numCountries; i++) {
+                for (int j = 0; j < numCountries; j++) {
+                    if (Matrix[i][k] != Integer.MAX_VALUE && Matrix[k][j] != Integer.MAX_VALUE &&
+                    Matrix[i][k] + Matrix[k][j] < Matrix[i][j]) {
+                        Matrix[i][j] = Matrix[i][k] + Matrix[k][j];
+                    }
+                }
+            }
+        }
+
+        System.out.print("\t");
+        for (Country country : countries) {
+            System.out.print(country.getName() + "\t");
+        }
+        System.out.println();
+
+        for (int i = 0; i < numCountries; i++) {
+            System.out.print(countries.get(i).getName() + "\t");
+            for (int j = 0; j < numCountries; j++) {
+                if (Matrix[i][j] == Integer.MAX_VALUE) {
+                    System.out.print("INF\t");
+                } else {
+                    System.out.print(Matrix[i][j] + "\t");
+                }
+            }
+            System.out.println();
+        }
+
+        System.out.println(Matrix[countries.indexOf(findCountryByName("USA"))][countries.indexOf(findCountryByName("Canada"))]);
+        System.out.println(Matrix[countries.indexOf(findCountryByName("Canada"))][countries.indexOf(findCountryByName("USA"))]);
+    }
 
     public void acceptUserInput() {
         // Replace with your code
         System.out.println("org.example.IRoadTrip - skeleton");
     }
 
-
     public static void main(String[] args) {
         IRoadTrip a3 = new IRoadTrip(args);
-        a3.findCountryByName("Zaire").details();
+        a3.findCountryByName("USA").details();
 //        a3.acceptUserInput();
 
     }
-
 }
 

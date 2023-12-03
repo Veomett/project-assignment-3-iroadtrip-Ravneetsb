@@ -9,8 +9,6 @@ public class Country implements Comparable<Country> {
     private String id;
     private ArrayList<String> alias = new ArrayList<>();
     private final HashMap<Country, Integer> neighbours;
-//    private final HashMap<Country, String> Neighbours;
-
     public Country(String name) {
         this.name = name;
         this.neighbours = new HashMap<>();
