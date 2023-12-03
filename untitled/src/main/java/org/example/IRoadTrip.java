@@ -232,13 +232,11 @@ public class IRoadTrip {
             String name = c.getName();
             String[] nameArr =name.split(",");
             if (nameArr.length > 1) {
-                if (name.contains("the")){
-                    c.addAlias(formatCountryName(nameArr[1].trim() + " " + nameArr[0].trim()));
-                    if (!nameArr[0].equals("Congo")) {
-                        c.addAlias(formatCountryName(nameArr[0].trim()));
-                    }
-//                    c.details();
+                c.addAlias(formatCountryName(nameArr[1].trim() + " " + nameArr[0].trim()));
+                if (!nameArr[0].equals("Congo") && !nameArr[0].equals("Korea")) {
+                    c.addAlias(formatCountryName(nameArr[0].trim()));
                 }
+
             }
         }
     }
