@@ -8,7 +8,7 @@ public class Country implements Comparable<Country> {
     private String code;
     private String id;
     private ArrayList<String> alias = new ArrayList<>();
-    private final HashMap<Country, String> neighbours;
+    private final HashMap<Country, Integer> neighbours;
 //    private final HashMap<Country, String> Neighbours;
 
     public Country(String name) {
@@ -29,10 +29,10 @@ public class Country implements Comparable<Country> {
     public String getName() {
         return this.name;
     }
-    public void addNeighbour(Country country, String distance) {
+    public void addNeighbour(Country country, Integer distance) {
         neighbours.put(country, distance);
     }
-    public HashMap<Country, String> getNeighbours() {
+    public HashMap<Country, Integer> getNeighbours() {
         return neighbours;
     }
 
@@ -65,6 +65,7 @@ public class Country implements Comparable<Country> {
     public void addAlias(String alias) {
         this.alias.add(alias);
     }
+
 
     public void details() {
         String details = "---------------------------------\n" +

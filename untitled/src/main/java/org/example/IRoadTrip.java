@@ -17,29 +17,35 @@ public class IRoadTrip {
         updateNeighbours();
         dataFix();
         readTSV();
-//        for (Country c: countries) {
-//            c.details();
-//        }
-
-//        readCSV();
+        readCSV();
     }
 
     private void readCSV() {
         // TO DO: add data to hashmap.
         try (BufferedReader br = new BufferedReader(new FileReader("capdist.csv"))) {
             String line;
+            line = br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] fields = line.split(",");
-
-                for (String field: fields) {
-                    System.out.println(field + " ");
+                String firstCountry = fields[1];
+                String secondCountry = fields[3];
+                int distance = Integer.parseInt(fields[4]);
+                Country c1 = findCountryByName(firstCountry);
+                Country c2 = findCountryByName(secondCountry);
+                if (c1 != null && c2 != null) {
+                    if (isNeighbour(c1, c2)) {
+                        c1.getNeighbours().replace(c2, distance);
+                        c2.getNeighbours().replace(c1, distance);
+                    }
                 }
-
-                System.out.println();
             }
         } catch (IOException e) {
             System.out.println("capdist.csv not found.");
         }
+    }
+
+    private boolean isNeighbour(Country a, Country b) {
+        return a.getNeighbours().containsKey(b);
     }
 
     private void getNeighbourAlias(String line) {
@@ -187,7 +193,7 @@ public class IRoadTrip {
             for (String s : n) {
                 Country co = findCountryByName(s);
                 if (co != null) {
-                    c.addNeighbour(co, " ");
+                    c.addNeighbour(co, Integer.MAX_VALUE);
                 }
             }
         }
@@ -209,11 +215,21 @@ public class IRoadTrip {
     }
 
     private void dataFix() {
-//        findCountryByName("United States").addAlias("United States of America");
-//        findCountryByName("Germany").addAlias("German Federal Republic");
-//        findCountryByName("Suriname").addAlias("Surinam");
         nameHasThe();
         nameHasAnd();
+        findCountryByName("United States").addAlias("United States of America");
+        findCountryByName("Germany").addAlias("German Federal Republic");
+        findCountryByName("Suriname").addAlias("Surinam");
+        findCountryByName("North Korea").addAlias("Korea, People'S Republic of");
+        findCountryByName("South Korea").addAlias("Korea, Republic of");
+        findCountryByName("North Macedonia").addAlias("Macedonia");
+        findCountryByName("Vietnam").addAlias("Vietnam, Democratic Republic of");
+        findCountryByName("Romania").addAlias("Rumania");
+        findCountryByName("Cabo Verde").addAlias("Cape Verde");
+        findCountryByName("Kyrgyzstan").addAlias("Kyrgyz Republic");
+        findCountryByName("Democratic Republic of the Congo").addAlias("Congo, Democratic Republic of (Zaire)");
+        findCountryByName("Democratic Republic of the Congo").addAlias("Democratic Republic of Congo");
+        findCountryByName("Democratic Republic of the Congo").addAlias("Zaire");
         neighbourAliasFix();
     }
 
@@ -274,8 +290,7 @@ public class IRoadTrip {
 
     public static void main(String[] args) {
         IRoadTrip a3 = new IRoadTrip(args);
-        a3.findCountryByName("Korea, North").details();
-        a3.findCountryByName("Democratic Republic of the Congo").details();
+        a3.findCountryByName("Zaire").details();
 //        a3.acceptUserInput();
 
     }
