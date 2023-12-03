@@ -1,12 +1,13 @@
 package org.example;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Country implements Comparable<Country> {
     private final String name;
     private String code;
     private String id;
-    private String alias = null;
+    private ArrayList<String> alias = new ArrayList<>();
     private final HashMap<Country, String> neighbours;
 //    private final HashMap<Country, String> Neighbours;
 
@@ -57,12 +58,12 @@ public class Country implements Comparable<Country> {
         return res;
     }
 
-    public String getAlias() {
+    public ArrayList<String> getAlias() {
         return alias;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void addAlias(String alias) {
+        this.alias.add(alias);
     }
 
     public void details() {
