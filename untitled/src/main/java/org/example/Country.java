@@ -7,7 +7,7 @@ public class Country implements Comparable<Country> {
     private final String name;
     private String code;
     private String id;
-    private ArrayList<String> alias = new ArrayList<>();
+    private final ArrayList<String> alias = new ArrayList<>();
     private final HashMap<Country, Integer> neighbours;
     public Country(String name) {
         this.name = name;
@@ -17,6 +17,10 @@ public class Country implements Comparable<Country> {
     public int compareTo(Country c) {
         return this.code.compareTo(c.getId());
     }
+
+    /**
+     * Getters and Setters.
+     */
 
     public void setCode(String code) {
         this.code = code;
@@ -45,7 +49,7 @@ public class Country implements Comparable<Country> {
     @Override
     public String toString() {
         String res;
-        if (this.alias != null) {
+        if (!this.alias.isEmpty()) {
             res = "{ Name: " + this.name +
                     " | Alias: " + this.alias +
                     " }";
@@ -65,6 +69,10 @@ public class Country implements Comparable<Country> {
     }
 
 
+    /**
+     * Debugging Function.
+     * Prints the details of the country in a nice format.
+     */
     public void details() {
         String details = "---------------------------------\n" +
                 "Object Country: \n" +

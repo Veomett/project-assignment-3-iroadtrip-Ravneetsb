@@ -7,6 +7,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Gives the path between 2 countries, if it exists.
+ */
 public class IRoadTrip {
     private final ArrayList<Country> countries = new ArrayList<>();
     private final HashMap<Country, ArrayList<String>> neighbours = new HashMap<>();
@@ -14,18 +17,24 @@ public class IRoadTrip {
     public int[][] Matrix;
     public int[][] pathMatrix;
     public IRoadTrip (String [] args) {
-        // Replace with your code
-        readTXT();
+        if (args.length != 3) {
+            System.err.println("Usage: java IRoadTrip txt-file csv-file tsv-file");
+            System.exit(-1);
+        }
+        readTXT(args[0]);
         updateNeighbours();
         dataFix();
-        readTSV();
-        readCSV();
+        readTSV(args[2]);
+        readCSV(args[1]);
         initMatrix();
     }
 
-    private void readCSV() {
-        // TO DO: add data to hashmap.
-        try (BufferedReader br = new BufferedReader(new FileReader("capdist.csv"))) {
+    /**
+     * read the CSV file and populate the respective country object.
+     * @param file csv file path.
+     */
+    private void readCSV(String file) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             br.readLine();
             while ((line = br.readLine()) != null) {
@@ -47,10 +56,20 @@ public class IRoadTrip {
         }
     }
 
+    /**
+     * Are 2 countries neighbours?
+     * @param a Country
+     * @param b Country
+     * @return true if a and b are neighbours
+     */
     private boolean isNeighbour(Country a, Country b) {
         return a.getNeighbours().containsKey(b);
     }
 
+    /**
+     * extract country alias from brackets.
+     * @param line line from the file being read.
+     */
     private void getNeighbourAlias(String line) {
         Pattern pattern = Pattern.compile(".+;\\s(?<Country>.+)\\s\\((?<Alias>.+)\\).*");
         Matcher match = pattern.matcher(line);
@@ -63,14 +82,18 @@ public class IRoadTrip {
         }
     }
 
+    /**
+     * Read the txt file and create the Country instance and populate Country's neighbours.
+     * @param file txt file path
+     */
     @SuppressWarnings("unchecked")
-    private void readTXT() {
+    private void readTXT(String file) {
         // TO DO: special cases for countries with a "," in the name.
         String countryRegex = "(?<Country>[A-Za-z\\s,\\-']+)";
         Pattern pattern;
         Matcher match;
 
-        try (BufferedReader br = new BufferedReader(new FileReader("borders.txt"))){
+        try (BufferedReader br = new BufferedReader(new FileReader(file))){
             String line;
             Country country = null;
             pattern = Pattern.compile(countryRegex);
@@ -119,6 +142,12 @@ public class IRoadTrip {
         }
     }
 
+    /**
+     * extract alias from country name.
+     * @param data country name
+     * @param country true if country, false if neighbours
+     * @return alias if extracted else null.
+     */
     private String getAlias(String data, boolean country) {
         Pattern pattern;
         if (country)
@@ -132,6 +161,11 @@ public class IRoadTrip {
         }
     }
 
+    /**
+     * extract alias from a country name, add it to aliases and return the clean country name.
+     * @param data country name
+     * @return country name after cleaning.
+     */
     private String slashCheck(String data) {
         String[] dataArr = data.split("/");
         if (dataArr.length > 1) {
@@ -141,8 +175,12 @@ public class IRoadTrip {
         return dataArr[0];
     }
 
-    private void readTSV() {
-        try (BufferedReader br = new BufferedReader(new FileReader("state_name.tsv"))) {
+    /**
+     * Read the tsv file and populate the state-ID and aliases for countries.
+     * @param file tsv file path.
+     */
+    private void readTSV(String file) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line;
             while ((line = br.readLine()) != null) {
                 line = line.toLowerCase();
@@ -178,6 +216,11 @@ public class IRoadTrip {
         }
     }
 
+    /**
+     * Format the country name, to make the country names have the same case format across files.
+     * @param name country name / alias / ID
+     * @return formatted string.
+     */
     private String formatCountryName(String name) {
         Pattern pattern = Pattern.compile("^t|\\b(?!(of|the|and)\\b)\\w");
         Matcher match = pattern.matcher(name);
@@ -189,6 +232,9 @@ public class IRoadTrip {
         return sb.toString();
     }
 
+    /**
+     * After countries have been created, populate the neighbours.
+     */
     private void updateNeighbours() {
         for (Country c: countries) {
             ArrayList<String> n = this.neighbours.get(c);
@@ -203,6 +249,11 @@ public class IRoadTrip {
         }
     }
 
+    /**
+     * Returns the Country either by name, alias or ID.
+     * @param name Country name / alias / ID
+     * @return Country
+     */
     public Country findCountryByName(String name) {
         for (Country c: countries) {
             if (c.getName().equals(name))
@@ -218,15 +269,19 @@ public class IRoadTrip {
         return null;
     }
 
+    /**
+     * Alias generation and handling extremely disconnected data.
+     */
+
     private void dataFix() {
         nameHasThe();
         nameHasAnd();
-//        findCountryByName("South Korea").addNeighbour(findCountryByName("North Korea"));
         findCountryByName("United States").addAlias("United States of America");
         findCountryByName("Canada").addNeighbour(findCountryByName("United States"), 731);
         findCountryByName("Germany").addAlias("German Federal Republic");
         findCountryByName("Suriname").addAlias("Surinam");
         findCountryByName("North Korea").addAlias("Korea, People'S Republic of");
+        findCountryByName("North Korea").addAlias("Korea, People's Republic of");
         findCountryByName("South Korea").addAlias("Korea, Republic of");
         findCountryByName("North Macedonia").addAlias("Macedonia");
         findCountryByName("Vietnam").addAlias("Vietnam, Democratic Republic of");
@@ -236,6 +291,7 @@ public class IRoadTrip {
         findCountryByName("Democratic Republic of the Congo").addAlias("Congo, Democratic Republic of (Zaire)");
         findCountryByName("Democratic Republic of the Congo").addAlias("Democratic Republic of Congo");
         findCountryByName("Democratic Republic of the Congo").addAlias("Zaire");
+        findCountryByName("Zaire").getAlias().remove("Congo");
         findCountryByName("Republic of the Congo").addAlias("Congo");
         findCountryByName("United Kingdom").addAlias("UK");
         findCountryByName("Timor-Leste").addAlias("East Timor");
@@ -243,6 +299,9 @@ public class IRoadTrip {
         neighbourAliasFix();
     }
 
+    /**
+     * helper function for alias generation.
+     */
     private void neighbourAliasFix() {
         neighbourAlias.remove("Morocco");
         for (String country: neighbourAlias.keySet()) {
@@ -255,14 +314,18 @@ public class IRoadTrip {
             else System.out.println(country + " is null");
         }
     }
-
+    /**
+     * helper function for alias generation.
+     */
     private void nameHasComma(String name, Country country) {
         String[] nameArr = name.split(",");
         if (nameArr.length > 1) {
             country.addAlias(nameArr[1].trim() + " " + nameArr[0].trim());
         }
     }
-
+    /**
+     * helper function for alias generation.
+     */
     private void nameHasThe() {
         for (Country c: countries) {
             String name = c.getName();
@@ -276,7 +339,9 @@ public class IRoadTrip {
             }
         }
     }
-
+    /**
+     * helper function for alias generation.
+     */
     private void nameHasAnd() {
         Pattern pattern = Pattern.compile("[A-Za-z]+\\sand\\s[A-Za-z]+");
         Matcher match;
@@ -290,6 +355,12 @@ public class IRoadTrip {
         }
     }
 
+    /**
+     * Gets the distance between two countries.
+     * @param country1 Country
+     * @param country2 Country
+     * @return -1 if they are not neighbours, the distance between their capitals otherwise.
+     */
     public int getDistance (String country1, String country2) {
         Country c1 = findCountryByName(country1);
         Country c2 = findCountryByName(country2);
@@ -310,6 +381,12 @@ public class IRoadTrip {
         return -1;
     }
 
+    /**
+     * Construct the path between two countries from the path matrix.
+     * @param country1 Source Country
+     * @param country2 Destination Country
+     * @return List of path travelled from country to country to reach destination.
+     */
     public List<String> findPath (String country1, String country2) {
         int indexC1 = countries.indexOf(findCountryByName(country1));
         int indexC2 = countries.indexOf(findCountryByName(country2));
@@ -317,6 +394,11 @@ public class IRoadTrip {
         return formatPath(path);
     }
 
+    /**
+     * Helper function to format the path retrieved from the path matrix.
+     * @param path path from path matrix.
+     * @return formatted path.
+     */
     private List<String> formatPath(List<Integer> path) {
         if (path == null) {
             return null;
@@ -338,6 +420,12 @@ public class IRoadTrip {
         return finalPath;
     }
 
+    /**
+     * reconstruct the path from the path matrix.
+     * @param indexC1 index of Source Country
+     * @param indexC2 index of Destination Country.
+     * @return List containing integer path.
+     */
     private List<Integer> findPath(int indexC1, int indexC2) {
         List<Integer> path = new LinkedList<>();
         if (pathMatrix[indexC1][indexC2] == -1) {
@@ -352,12 +440,15 @@ public class IRoadTrip {
         return path;
     }
 
+    /**
+     * Floyd's Algorithm.
+     */
     private void initMatrix() {
         int numCountries = countries.size();
         pathMatrix = new int[countries.size()][countries.size()];
         Matrix = new int[countries.size()][countries.size()];
-        for (int i = 0 ; i < numCountries; i++) {
-            for (int j = 0 ; j < numCountries; j++) {
+        for (int i = 0; i < numCountries; i++) {
+            for (int j = 0; j < numCountries; j++) {
                 if (i == j) {
                     Matrix[i][j] = 0;
                     pathMatrix[i][j] = i;
@@ -371,7 +462,7 @@ public class IRoadTrip {
         for (int i = 0; i < numCountries; i++) {
             Country country = countries.get(i);
             HashMap<Country, Integer> neighbours = country.getNeighbours();
-            for (Country neighbour: neighbours.keySet()) {
+            for (Country neighbour : neighbours.keySet()) {
                 int neighbourIndex = countries.indexOf(neighbour);
                 int distance = neighbours.get(neighbour);
                 Matrix[i][neighbourIndex] = distance;
@@ -385,7 +476,7 @@ public class IRoadTrip {
             for (int i = 0; i < numCountries; i++) {
                 for (int j = 0; j < numCountries; j++) {
                     if (Matrix[i][k] != Integer.MAX_VALUE && Matrix[k][j] != Integer.MAX_VALUE &&
-                    Matrix[i][k] + Matrix[k][j] < Matrix[i][j]) {
+                            Matrix[i][k] + Matrix[k][j] < Matrix[i][j]) {
                         Matrix[i][j] = Matrix[i][k] + Matrix[k][j];
                         pathMatrix[i][j] = pathMatrix[k][j];
                     }
@@ -394,27 +485,9 @@ public class IRoadTrip {
         }
     }
 
-    private void printMatrix(int numCountries) {
-        System.out.print("\t");
-        for (Country country : countries) {
-            System.out.print(country.getName() + "\t");
-        }
-        System.out.println();
-
-        for (int i = 0; i < numCountries; i++) {
-            System.out.print(countries.get(i).getName() + "\t");
-            for (int j = 0; j < numCountries; j++) {
-                if (pathMatrix[i][j] == Integer.MAX_VALUE) {
-                    System.out.print("INF\t");
-                } else {
-                    System.out.print(pathMatrix[i][j] + "\t");
-                }
-            }
-            System.out.println();
-        }
-    }
-
-
+    /**
+     * Accept user input to give the path between two countries.
+     */
     public void acceptUserInput() {
         Scanner scan = new Scanner(System.in);
 
@@ -448,13 +521,13 @@ public class IRoadTrip {
         }
     }
 
+    /**
+     * Main function
+     * @param args path for files.
+     */
     public static void main(String[] args) {
         IRoadTrip a3 = new IRoadTrip(args);
-//        a3.findCountryByName("North Korea").details();
-//        a3.findCountryByName("Canada").details();
-//        a3.acceptUserInput();
-        System.out.println(a3.getDistance("USA", "AUS"));
-        System.out.println(a3.findPath("CAN", "USA"));
+        a3.acceptUserInput();
     }
 }
 
