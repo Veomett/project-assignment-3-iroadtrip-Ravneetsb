@@ -12,6 +12,7 @@ public class IRoadTrip {
     private final HashMap<Country, ArrayList<String>> neighbours = new HashMap<>();
     private final HashMap<String, String> neighbourAlias = new HashMap<>();
     public int[][] Matrix;
+    public int[][] pathMatrix;
     public IRoadTrip (String [] args) {
         // Replace with your code
         readTXT();
@@ -283,18 +284,43 @@ public class IRoadTrip {
     }
 
     public List<String> findPath (String country1, String country2) {
-        // Replace with your code
+        int indexC1 = countries.indexOf(findCountryByName(country1));
+        int indexC2 = countries.indexOf(findCountryByName(country2));
+        List<Integer> path = findPath(indexC1, indexC2);
+        assert path != null;
+        for (Integer integer : path) {
+            System.out.println(countries.get(integer));
+        }
         return null;
+    }
+
+    private List<Integer> findPath(int indexC1, int indexC2) {
+        List<Integer> path = new LinkedList<>();
+        if (pathMatrix[indexC1][indexC2] == -1) {
+            return null;
+        }
+        path.add(indexC1);
+
+        while (indexC1 != indexC2) {
+            indexC1 = pathMatrix[indexC2][indexC1];
+            path.add(indexC1);
+        }
+        return path;
     }
 
     private void initMatrix() {
         int numCountries = countries.size();
+        pathMatrix = new int[countries.size()][countries.size()];
         Matrix = new int[countries.size()][countries.size()];
         for (int i = 0 ; i < numCountries; i++) {
             for (int j = 0 ; j < numCountries; j++) {
                 if (i == j) {
                     Matrix[i][j] = 0;
-                } else Matrix[i][j] = Integer.MAX_VALUE;
+                    pathMatrix[i][j] = i;
+                } else {
+                    Matrix[i][j] = Integer.MAX_VALUE;
+                    pathMatrix[i][j] = -1;
+                }
             }
         }
 
@@ -306,6 +332,8 @@ public class IRoadTrip {
                 int distance = neighbours.get(neighbour);
                 Matrix[i][neighbourIndex] = distance;
                 Matrix[neighbourIndex][i] = distance;
+                pathMatrix[i][neighbourIndex] = i;
+                pathMatrix[neighbourIndex][i] = neighbourIndex;
             }
         }
 
@@ -315,6 +343,7 @@ public class IRoadTrip {
                     if (Matrix[i][k] != Integer.MAX_VALUE && Matrix[k][j] != Integer.MAX_VALUE &&
                     Matrix[i][k] + Matrix[k][j] < Matrix[i][j]) {
                         Matrix[i][j] = Matrix[i][k] + Matrix[k][j];
+                        pathMatrix[i][j] = pathMatrix[k][j];
                     }
                 }
             }
@@ -329,18 +358,20 @@ public class IRoadTrip {
         for (int i = 0; i < numCountries; i++) {
             System.out.print(countries.get(i).getName() + "\t");
             for (int j = 0; j < numCountries; j++) {
-                if (Matrix[i][j] == Integer.MAX_VALUE) {
+                if (pathMatrix[i][j] == Integer.MAX_VALUE) {
                     System.out.print("INF\t");
                 } else {
-                    System.out.print(Matrix[i][j] + "\t");
+                    System.out.print(pathMatrix[i][j] + "\t");
                 }
             }
             System.out.println();
         }
 
-        System.out.println(Matrix[countries.indexOf(findCountryByName("USA"))][countries.indexOf(findCountryByName("Canada"))]);
-        System.out.println(Matrix[countries.indexOf(findCountryByName("Canada"))][countries.indexOf(findCountryByName("USA"))]);
+        System.out.println(pathMatrix[countries.indexOf(findCountryByName("USA"))][countries.indexOf(findCountryByName("Canada"))]);
+        System.out.println(pathMatrix[countries.indexOf(findCountryByName("Canada"))][countries.indexOf(findCountryByName("USA"))]);
+        System.out.println(countries.indexOf(findCountryByName("Canada")));
     }
+
 
     public void acceptUserInput() {
         // Replace with your code
@@ -349,7 +380,7 @@ public class IRoadTrip {
 
     public static void main(String[] args) {
         IRoadTrip a3 = new IRoadTrip(args);
-        a3.findCountryByName("USA").details();
+        a3.findPath("Gabon", "Australia");
 //        a3.acceptUserInput();
 
     }
