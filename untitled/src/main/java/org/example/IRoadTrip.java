@@ -85,8 +85,13 @@ public class IRoadTrip {
                         if (firstCountry) {
                             String countryName = formatCountryName(match.group("Country").trim());
                             country = new Country(countryName);
-                            if (alias != null)
+                            nameHasComma(countryName, country);
+                            if (countryName.equals("United States"))
+                                country.addAlias("US");
+                            if (alias != null) {
                                 country.addAlias(alias);
+                                country.addAlias(countryName + " (" + alias + ")");
+                            }
                             firstCountry = false;
                         } else {
                             String temp = formatCountryName(match.group("Country").trim());
@@ -187,10 +192,12 @@ public class IRoadTrip {
     private void updateNeighbours() {
         for (Country c: countries) {
             ArrayList<String> n = this.neighbours.get(c);
-            for (String s : n) {
-                Country co = findCountryByName(s);
-                if (co != null) {
-                    c.addNeighbour(co, Integer.MAX_VALUE);
+            if (n != null) {
+                for (String s : n) {
+                    Country co = findCountryByName(s);
+                    if (co != null) {
+                        c.addNeighbour(co, Integer.MAX_VALUE);
+                    }
                 }
             }
         }
@@ -214,7 +221,9 @@ public class IRoadTrip {
     private void dataFix() {
         nameHasThe();
         nameHasAnd();
+//        findCountryByName("South Korea").addNeighbour(findCountryByName("North Korea"));
         findCountryByName("United States").addAlias("United States of America");
+        findCountryByName("Canada").addNeighbour(findCountryByName("United States"), 731);
         findCountryByName("Germany").addAlias("German Federal Republic");
         findCountryByName("Suriname").addAlias("Surinam");
         findCountryByName("North Korea").addAlias("Korea, People'S Republic of");
@@ -227,6 +236,10 @@ public class IRoadTrip {
         findCountryByName("Democratic Republic of the Congo").addAlias("Congo, Democratic Republic of (Zaire)");
         findCountryByName("Democratic Republic of the Congo").addAlias("Democratic Republic of Congo");
         findCountryByName("Democratic Republic of the Congo").addAlias("Zaire");
+        findCountryByName("Republic of the Congo").addAlias("Congo");
+        findCountryByName("United Kingdom").addAlias("UK");
+        findCountryByName("Timor-Leste").addAlias("East Timor");
+        findCountryByName("Czechia").addAlias("Czech Republic");
         neighbourAliasFix();
     }
 
@@ -234,9 +247,19 @@ public class IRoadTrip {
         neighbourAlias.remove("Morocco");
         for (String country: neighbourAlias.keySet()) {
             Country c = findCountryByName(country);
-            if (c != null)
+            if (c != null) {
                 c.addAlias(neighbourAlias.get(country));
+                c.addAlias(country + " (" + neighbourAlias.get(country) + ")");
+            }
+
             else System.out.println(country + " is null");
+        }
+    }
+
+    private void nameHasComma(String name, Country country) {
+        String[] nameArr = name.split(",");
+        if (nameArr.length > 1) {
+            country.addAlias(nameArr[1].trim() + " " + nameArr[0].trim());
         }
     }
 
@@ -271,8 +294,18 @@ public class IRoadTrip {
         Country c1 = findCountryByName(country1);
         Country c2 = findCountryByName(country2);
         if (c1 != null && c2 != null) {
-            if (isNeighbour(c1, c2))
-                return c1.getNeighbours().get(c2);
+            if (isNeighbour(c1, c2)) {
+                if (c1.getNeighbours().get(c2) == Integer.MAX_VALUE) {
+                    if (c2.getNeighbours().get(c1) == Integer.MAX_VALUE) {
+                        return -1;
+                    } else {
+                        return c2.getNeighbours().get(c1);
+                    }
+                } else {
+                    return c1.getNeighbours().get(c2);
+                }
+            }
+
         }
         return -1;
     }
@@ -294,7 +327,11 @@ public class IRoadTrip {
         Country c2;
         while(pathIter.hasNext()) {
             c2 = countries.get(pathIter.next());
-            String pathString = c1.getName() + " --> " + c2.getName() + " (" + getDistance(c1.getName(), c2.getName()) + " km.)";
+            int distance = getDistance(c1.getName(), c2.getName());
+            if (distance == -1) {
+                distance = getDistance(c2.getName(), c1.getName());
+            }
+            String pathString = c1.getName() + " --> " + c2.getName() + " (" + distance + " km.)";
             finalPath.add(pathString);
             c1 = c2;
         }
@@ -413,7 +450,11 @@ public class IRoadTrip {
 
     public static void main(String[] args) {
         IRoadTrip a3 = new IRoadTrip(args);
-        a3.acceptUserInput();
+//        a3.findCountryByName("North Korea").details();
+//        a3.findCountryByName("Canada").details();
+//        a3.acceptUserInput();
+        System.out.println(a3.getDistance("USA", "AUS"));
+        System.out.println(a3.findPath("CAN", "USA"));
     }
 }
 
