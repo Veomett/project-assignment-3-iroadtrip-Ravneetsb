@@ -27,7 +27,7 @@ public class IRoadTrip {
         // TO DO: add data to hashmap.
         try (BufferedReader br = new BufferedReader(new FileReader("capdist.csv"))) {
             String line;
-            line = br.readLine();
+            br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] fields = line.split(",");
                 String firstCountry = fields[1];
@@ -123,7 +123,6 @@ public class IRoadTrip {
         if (match.find())
             return formatCountryName(match.group("Alias").toLowerCase());
         else {
-//            System.out.println(data);
             return null;
         }
     }
@@ -138,7 +137,6 @@ public class IRoadTrip {
     }
 
     private void readTSV() {
-        HashMap<String, String> countryCodes = new HashMap<>();
         try (BufferedReader br = new BufferedReader(new FileReader("state_name.tsv"))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -150,7 +148,6 @@ public class IRoadTrip {
                     country = slashCheck(country);
                     String countryCode = data[1].toUpperCase();
                     Country c = findCountryByName(country);
-//                    System.out.println("call on " + country);
                     if (c != null) {
                         if (alias != null)
                             c.addAlias(alias);
@@ -166,7 +163,6 @@ public class IRoadTrip {
                             } else {
                                 System.out.println(line);
                             }
-//                            c.details();
                         }
                     }
 
@@ -175,14 +171,12 @@ public class IRoadTrip {
         } catch (IOException e) {
             System.out.println("state_name.tsv not found");
         }
-        System.out.println(countries);
-//        updateCountries();
     }
 
     private String formatCountryName(String name) {
         Pattern pattern = Pattern.compile("^t|\\b(?!(of|the|and)\\b)\\w");
         Matcher match = pattern.matcher(name);
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         while (match.find()) {
             match.appendReplacement(sb, match.group().toUpperCase());
         }
@@ -287,11 +281,24 @@ public class IRoadTrip {
         int indexC1 = countries.indexOf(findCountryByName(country1));
         int indexC2 = countries.indexOf(findCountryByName(country2));
         List<Integer> path = findPath(indexC1, indexC2);
-        assert path != null;
-        for (Integer integer : path) {
-            System.out.println(countries.get(integer));
+        return formatPath(path);
+    }
+
+    private List<String> formatPath(List<Integer> path) {
+        if (path == null) {
+            return null;
         }
-        return null;
+        List<String> finalPath = new ArrayList<>();
+        Iterator<Integer> pathIter = path.iterator();
+        Country c1 = countries.get(pathIter.next());
+        Country c2;
+        while(pathIter.hasNext()) {
+            c2 = countries.get(pathIter.next());
+            String pathString = c1.getName() + " --> " + c2.getName() + " (" + getDistance(c1.getName(), c2.getName()) + " km.)";
+            finalPath.add(pathString);
+            c1 = c2;
+        }
+        return finalPath;
     }
 
     private List<Integer> findPath(int indexC1, int indexC2) {
@@ -348,7 +355,9 @@ public class IRoadTrip {
                 }
             }
         }
+    }
 
+    private void printMatrix(int numCountries) {
         System.out.print("\t");
         for (Country country : countries) {
             System.out.print(country.getName() + "\t");
@@ -366,23 +375,45 @@ public class IRoadTrip {
             }
             System.out.println();
         }
-
-        System.out.println(pathMatrix[countries.indexOf(findCountryByName("USA"))][countries.indexOf(findCountryByName("Canada"))]);
-        System.out.println(pathMatrix[countries.indexOf(findCountryByName("Canada"))][countries.indexOf(findCountryByName("USA"))]);
-        System.out.println(countries.indexOf(findCountryByName("Canada")));
     }
 
 
     public void acceptUserInput() {
-        // Replace with your code
-        System.out.println("org.example.IRoadTrip - skeleton");
+        Scanner scan = new Scanner(System.in);
+
+        while (true) {
+            System.out.print("Enter country name (EXIT to quit): ");
+            String country = scan.nextLine();
+            if (country.equals("EXIT"))
+                System.exit(0);
+            Country source = findCountryByName(country);
+            while (source == null) {
+                System.out.println("Invalid country name. Please enter a valid country name");
+                System.out.print("Enter country name (EXIT to quit): ");
+                source = findCountryByName(scan.nextLine());
+            }
+            Country destination;
+            System.out.print("Enter country name (EXIT to quit): ");
+            country = scan.nextLine();
+            destination = findCountryByName(country);
+            while (destination == null) {
+                System.out.println("Invalid country name. Please enter a valid country name");
+                System.out.print("Enter country name (EXIT to quit): ");
+                destination = findCountryByName(scan.nextLine());
+            }
+            List<String> path = findPath(source.getName(), destination.getName());
+            if (path == null) {
+                System.out.println("NO PATH");
+            } else {
+                for (String p: path)
+                    System.out.println(p);
+            }
+        }
     }
 
     public static void main(String[] args) {
         IRoadTrip a3 = new IRoadTrip(args);
-        a3.findPath("Gabon", "Australia");
-//        a3.acceptUserInput();
-
+        a3.acceptUserInput();
     }
 }
 
