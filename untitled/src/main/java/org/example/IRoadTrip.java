@@ -296,6 +296,7 @@ public class IRoadTrip {
         findCountryByName("United Kingdom").addAlias("UK");
         findCountryByName("Timor-Leste").addAlias("East Timor");
         findCountryByName("Czechia").addAlias("Czech Republic");
+        findCountryByName("Denmark").getAlias().remove("Greenland");
         neighbourAliasFix();
     }
 
@@ -492,29 +493,37 @@ public class IRoadTrip {
         Scanner scan = new Scanner(System.in);
 
         while (true) {
-            System.out.print("Enter country name (EXIT to quit): ");
-            String country = scan.nextLine();
-            if (country.equals("EXIT"))
+            System.out.print("Enter the name of the first country (type EXIT to quit): ");
+            String country1 = scan.nextLine();
+            if (country1.equals("EXIT"))
                 System.exit(0);
-            Country source = findCountryByName(country);
+            Country source = findCountryByName(country1);
             while (source == null) {
                 System.out.println("Invalid country name. Please enter a valid country name");
-                System.out.print("Enter country name (EXIT to quit): ");
-                source = findCountryByName(scan.nextLine());
+                System.out.print("Enter the name of the first country (type EXIT to quit): ");
+                country1 = scan.nextLine();
+                source = findCountryByName(country1);
+
             }
             Country destination;
-            System.out.print("Enter country name (EXIT to quit): ");
-            country = scan.nextLine();
-            destination = findCountryByName(country);
+            System.out.print("Enter the name of the second country (type EXIT to quit): ");
+            String country2 = scan.nextLine();
+            if (country2.equals("EXIT"))
+                System.exit(0);
+            destination = findCountryByName(country2);
             while (destination == null) {
                 System.out.println("Invalid country name. Please enter a valid country name");
-                System.out.print("Enter country name (EXIT to quit): ");
-                destination = findCountryByName(scan.nextLine());
+                System.out.print("Enter the name of the second country (type EXIT to quit): ");
+                country2 = scan.nextLine();
+                if (country2.equals("EXIT"))
+                    System.exit(0);
+                destination = findCountryByName(country2);
             }
             List<String> path = findPath(source.getName(), destination.getName());
             if (path == null) {
                 System.out.println("NO PATH");
             } else {
+                System.out.println("Route from " + country1 + " to " + country2 + ": ");
                 for (String p: path)
                     System.out.println(p);
             }
