@@ -402,7 +402,7 @@ public class IRoadTrip {
      */
     private List<String> formatPath(List<Integer> path) {
         if (path == null) {
-            return null;
+            return new ArrayList<>();
         }
         List<String> finalPath = new ArrayList<>();
         Iterator<Integer> pathIter = path.iterator();
@@ -520,7 +520,7 @@ public class IRoadTrip {
                 destination = findCountryByName(country2);
             }
             List<String> path = findPath(source.getName(), destination.getName());
-            if (path == null) {
+            if (path.isEmpty()) {
                 System.out.println("NO PATH");
             } else {
                 System.out.println("Route from " + country1 + " to " + country2 + ": ");
